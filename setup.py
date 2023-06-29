@@ -25,7 +25,7 @@ setup(
     author='bhalliga',
     author_email='bhalliga@med.umich.edu',
     license='MIT',
-    packages=['explorer'],
+    packages=['distance'],
     entry_points = {
         # 'console_scripts' : []
     },
