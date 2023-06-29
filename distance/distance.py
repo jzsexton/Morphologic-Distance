@@ -10,6 +10,16 @@ from sklearn.decomposition import PCA
 from scipy.spatial import distance
 from numpy.linalg import inv, pinv
 
+def get_data_cols(df:pd.DataFrame, extra:list, show_cols=False):
+    pattern = "ImageNumber|Location|Center|Execution_Time|Parent|Child|Metadata"
+    if len(extra) > 0:
+        pattern+= "|".join(extra)
+    meta_cols = df.columns[df.columns.str.contains(pat=pattern, flags=re.IGNORECASE)]
+    data_cols = df.drop(columns=meta_cols).select_dtypes(include="float64").columns.tolist()
+    if show_cols:
+        print(data_cols)
+    return data_cols
+
 def mahalanobis(df:pd.DataFrame, data_cols:list, n_pcas=30):
     df = df[data_cols]
     df = df.loc[:, df.nunique() != 1]
