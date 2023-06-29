@@ -10,10 +10,11 @@ from sklearn.decomposition import PCA
 from scipy.spatial import distance
 from numpy.linalg import inv, pinv
 
-def get_data_cols(df:pd.DataFrame, extra:list, show_cols=False):
+def get_data_cols(df:pd.DataFrame, extra=[], show_cols=False):
     pattern = "ImageNumber|Location|Center|Execution_Time|Parent|Child|Metadata"
     if len(extra) > 0:
-        pattern+= "|".join(extra)
+        pattern+="|"+ "|".join(extra)
+    print(pattern)
     meta_cols = df.columns[df.columns.str.contains(pat=pattern, flags=re.IGNORECASE)]
     data_cols = df.drop(columns=meta_cols).select_dtypes(include="float64").columns.tolist()
     if show_cols:
@@ -22,17 +23,18 @@ def get_data_cols(df:pd.DataFrame, extra:list, show_cols=False):
 
 def mahalanobis(df:pd.DataFrame, data_cols:list, n_pcas=30):
     df = df[data_cols]
-    df = df.loc[:, df.nunique() != 1]
-    df.fillna(value=df.mean(), inplace=True)
+    df = df.fillna(value=df.mean())
     pca = PCA(n_components=n_pcas)
-    reduced = pd.DataFrame(pca.fit_transform(df))
-    # covariance matrix and  inverse of covariance matrix
-    cov = np.cov(reduced.values, rowvar=False)
-    inv_cov = inv(cov)
-    # mean vector
-    mean = np.mean(reduced, axis=0)
-    dist = df.apply(lambda row: distance.mahalanobis(row, mean, inv_cov), axis=1)
-    return dist
+    pca.fit(df)
+    transformed_data = pca.transform(df)
+    mean_vec = np.mean(transformed_data, axis=0)
+    cov_mat = np.cov(transformed_data.T)
+
+    mahalanobis_distances = []
+    for i in range(len(transformed_data)):
+        mahalanobis_distance = distance.mahalanobis(transformed_data[i], mean_vec, np.linalg.inv(cov_mat))
+        mahalanobis_distances.append(mahalanobis_distance)
+    return mahalanobis_distances
 
 def euclidean(df:pd.DataFrame, data_cols:list, n_pcas=30):
     df = df[data_cols]
@@ -40,6 +42,6 @@ def euclidean(df:pd.DataFrame, data_cols:list, n_pcas=30):
     df.fillna(value=df.mean(), inplace=True)
     pca = PCA(n_components=n_pcas)
     reduced = pd.DataFrame(pca.fit_transform(df))
-    dist = distance.euclidean(reduced.values)
+    dist = distance.euclidean(reduced.values, np.zeros(len(reduced)))
     return dist
     
