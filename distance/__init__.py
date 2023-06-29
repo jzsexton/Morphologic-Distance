@@ -1,1 +1,1 @@
-from .distance import mahalanobis, euclidean
+from .distance import mahalanobis, euclidean, get_data_cols
