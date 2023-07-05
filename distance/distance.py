@@ -44,4 +44,9 @@ def euclidean(df:pd.DataFrame, data_cols:list, n_pcas=30):
     reduced = pd.DataFrame(pca.fit_transform(df))
     dist = distance.euclidean(reduced.values, np.zeros(len(reduced)))
     return dist
-    
+
+def load_data(fname, ftype='csv'):
+    print('load the thing')
+
+def get_data_cols(df, extra=[]):
+    print("get the data cols")
